@@ -19,7 +19,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('/reservations', ReservationController::class);
     Route::put('/reservation/{id}', [ReservationController::class, 'update']);
     Route::delete('/reservation/{id}', [ReservationController::class, 'destroy']);
-    
+    Route::get('/reservations/{user_id}', [ReservationController::class, 'getUserReservations']);
+
 
 
     // Authentification & profil

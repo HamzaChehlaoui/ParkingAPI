@@ -45,6 +45,21 @@ class ReservationController extends Controller
         ], 201);
     }
 
+    public function show($userId)
+    {
+        $reservations = Reservation::where('user_id', $userId)->get();
+
+        if ($reservations->isEmpty()) {
+            return response()->json([
+                'message' => 'There are no reservation for this user'
+            ], 404);
+        }
+
+        return response()->json([
+            'reservations' => $reservations
+        ]);
+    }
+
     public function update(Request $request, $id)
 {
     $reservation = Reservation::find($id);
