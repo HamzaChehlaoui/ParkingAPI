@@ -13,10 +13,10 @@ return new class extends Migration
 {
     Schema::create('parkings', function (Blueprint $table) {
         $table->id();
-        $table->string('name');
+        $table->string('name')->unique();
         $table->string('location');
-        $table->integer('total_spaces');
-        $table->integer('available_spaces');
+        $table->integer('total_spaces')->default(0);
+        $table->integer('available_spaces')->default(0);
         $table->timestamps();
     });
 }
