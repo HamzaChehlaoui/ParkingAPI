@@ -1,17 +1,29 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ParkingController;
 use App\Http\Controllers\ReservationController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
-// API Routes
+// Routes publiques (non protégées)
+Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/register', [AuthController::class, 'register']);
+
+// Routes protégées avec Sanctum
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('parkings', ParkingController::class);
+    // Gestion des parkings
+    Route::apiResource('/parkings', ParkingController::class);
 
-    // Reservation routes
-    Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
-    Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
-    Route::get('/reservations/{id}', [ReservationController::class, 'show'])->name('reservations.show');
-    Route::put('/reservations/{id}', [ReservationController::class, 'update'])->name('reservations.update');
-    Route::delete('/reservations/{id}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
+    // Gestion des réservations
+    Route::apiResource('/reservations', ReservationController::class);
+
+    // Authentification & profil
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/profile', [AuthController::class, 'profile']);
+
+    // Récupérer l'utilisateur authentifié
+    Route::get('/user', function (Request $request) {
+        return response()->json(['user' => $request->user()]);
+    });
 });

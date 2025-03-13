@@ -2,8 +2,10 @@
 
 namespace App\Exceptions;
 
+
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Support\Facades\Log;
 
 class Handler extends ExceptionHandler
 {
@@ -23,8 +25,12 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (\Illuminate\Validation\ValidationException $e, $request) {
+            return response()->json([
+                'error' => 'Validation error',
+                'messages' => $e->errors()
+            ], 422);
         });
     }
+
 }

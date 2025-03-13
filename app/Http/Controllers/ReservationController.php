@@ -18,6 +18,8 @@ class ReservationController extends Controller
     public function store(Request $request)
     {
         // Validate the inputs
+       
+        exit;
         $request->validate([
             'parking_id' => 'required|exists:parkings,id',
             'start_time' => 'required|date|after_or_equal:today', // Ensure start time is today or in the future
