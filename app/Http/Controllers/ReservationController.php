@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Parking;
 use App\Models\Reservation;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ReservationController extends Controller
 {
@@ -17,43 +18,76 @@ class ReservationController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the inputs
-       
-        exit;
         $request->validate([
             'parking_id' => 'required|exists:parkings,id',
-            'start_time' => 'required|date|after_or_equal:today', // Ensure start time is today or in the future
-            'end_time' => 'required|date|after:start_time', // Ensure end time is after start time
+            'start_time' => 'required|date|after:now',
+            'end_time' => 'required|date|after:start_time',
         ]);
 
         $parking = Parking::find($request->parking_id);
 
-        // Check if there are available spaces
         if ($parking->available_spaces <= 0) {
-            return response()->json(['message' => 'No available spaces'], 400);
+            return response()->json(['message' => 'No available places in this parking.'], 400);
         }
 
-        // Check if there's any existing reservation overlapping the requested time
-        $existingReservation = Reservation::where('parking_id', $request->parking_id)
-                                          ->where('start_time', '<', $request->end_time)
-                                          ->where('end_time', '>', $request->start_time)
-                                          ->first();
-
-        if ($existingReservation) {
-            return response()->json(['message' => 'Parking space already reserved for the selected time'], 400);
-        }
-
-        // Create the reservation
         $reservation = Reservation::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'parking_id' => $request->parking_id,
-            'start_time' => Carbon::parse($request->start_time),
-            'end_time' => Carbon::parse($request->end_time),
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
         ]);
 
-        // Decrease the available spaces in the parking
         $parking->decrement('available_spaces');
 
-        return response()->json($reservation, 201); // Return the created reservation
+        return response()->json([
+            'message' => 'Reservation successful',
+            'reservation' => $reservation
+        ], 201);
     }
+
+    public function update(Request $request, $id)
+{
+    $reservation = Reservation::find($id);
+    if (!$reservation) {
+        return response()->json(['message' => 'Reservation not found'], 404);
+    }
+
+    $start_time = $request->input('start_time');
+    $end_time = $request->input('end_time');
+
+    $reservation->start_time = $start_time;
+    $reservation->end_time = $end_time;
+    $reservation->save();
+
+    return response()->json([
+        'message' => 'Reservation updated successfully',
+        'reservation' => $reservation
+    ]);
+}
+
+    public function destroy($id)
+{
+    $reservation = Reservation::find($id);
+    if (!$reservation) {
+        return response()->json(['message' => 'Reservation not found'], 404);
+    }
+
+    $reservation->delete();
+
+    return response()->json(['message' => 'Reservation cancelled successfully']);
+}
+
+public function getUserReservations($userId)
+{
+    $reservations = Reservation::where('user_id', $userId)
+                                ->orderBy('start_time', 'desc')
+                                ->get();
+
+    return response()->json([
+        'reservations' => $reservations
+    ]);
+}
+
+
+
 }

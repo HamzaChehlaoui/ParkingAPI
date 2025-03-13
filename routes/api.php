@@ -17,6 +17,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Gestion des réservations
     Route::apiResource('/reservations', ReservationController::class);
+    Route::put('/reservation/{id}', [ReservationController::class, 'update']);
+    Route::delete('/reservation/{id}', [ReservationController::class, 'destroy']);
+    
+
 
     // Authentification & profil
     Route::post('/logout', [AuthController::class, 'logout']);
